@@ -6,6 +6,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Torture the Avocado 🥑</title>
+<meta property="og:title" content="Torture the Avocado 🥑">
+<meta property="og:description" content="Interactive 3D plant growth simulator. Rotate the pot, move the light, and watch the stem respond. Based on Porat (2020) Frontiers in Robotics and AI.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Torture the Avocado 🥑">
+<meta name="twitter:description" content="Interactive 3D plant growth simulator. Rotate the pot, move the light, and watch the stem respond. Based on Porat (2020) Frontiers in Robotics and AI.">
+<meta name="twitter:image" content="preview.png">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 :root{
@@ -54,6 +62,9 @@ canvas{display:block;width:100%!important;height:100%!important;touch-action:non
 
 /* ── Drawer ───────────────────────────────────────────────────── */
 #drawer{flex-shrink:0;background:rgba(14,11,9,0.97);border-top:1px solid var(--border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#drawer-toggle{position:absolute;left:50%;transform:translateX(-50%);top:-13px;width:44px;height:13px;background:rgba(14,11,9,0.97);border:1px solid var(--border);border-bottom:none;border-radius:6px 6px 0 0;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:30;color:var(--text3);font-size:9px;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+#drawer-toggle:active{color:var(--text)}
+#drawer.hidden #tabs,#drawer.hidden .panel-page.active{display:none}
 #tabs{border-bottom:1px solid var(--border2)}
 #tabs .tab-row{display:flex}
 #tabs .tab-row-sep{height:1px;background:var(--border2)}
@@ -269,7 +280,8 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
   </div>
 
   <!-- ── Drawer ── -->
-  <div id="drawer">
+  <div id="drawer" style="position:relative">
+    <button id="drawer-toggle" onclick="toggleDrawer()">▼</button>
     <div id="tabs">
       <div class="tab-row">
         <button class="tab active" onclick="switchTab('sim')">🌱 Grow</button>
@@ -421,6 +433,8 @@ function loadExample(name){
   }
   function setCirc(on){ if(circOn!==on) toggleCirc(); }
   function placeLight(x,y,z){
+    let _lr=Math.sqrt(x*x+z*z);
+    if(_lr>58){let _s=58/_lr;x*=_s;z*=_s;}
     lightPos={x,y,z}; makeLightSphere();
     document.getElementById('btn-addlight').style.display='none';
     document.getElementById('btn-rmlight').style.display='';
@@ -902,7 +916,11 @@ function removeLight(){
 }
 function finishPlaceLight(nx,ny){
   let y0=20, pt=rayAtY(nx,ny,y0);
-  if(pt){lightPos={x:pt.x,y:y0,z:pt.z}; makeLightSphere();}
+  if(pt){
+    let lr=Math.sqrt(pt.x*pt.x+pt.z*pt.z);
+    if(lr>58){let s=58/lr;pt.x*=s;pt.z*=s;}
+    lightPos={x:pt.x,y:y0,z:pt.z}; makeLightSphere();
+  }
   lightPlacing=false;
   document.getElementById('light-toast').classList.remove('show');
   document.getElementById('btn-addlight').style.display='none';
@@ -1028,7 +1046,11 @@ canvas3.addEventListener('pointermove',e=>{
   prevPinchDist=null;
   if(lightDragging&&lightPos){
     let n=getNorm(e.clientX,e.clientY),pt=rayAtY(n.x,n.y,lightPos.y);
-    if(pt){lightPos.x=pt.x;lightPos.z=pt.z;updateLightPos();}
+    if(pt){
+      let lr=Math.sqrt(pt.x*pt.x+pt.z*pt.z);
+      if(lr>58){let s=58/lr;pt.x*=s;pt.z*=s;}
+      lightPos.x=pt.x;lightPos.z=pt.z;updateLightPos();
+    }
     pointers[e.pointerId]={x:e.clientX,y:e.clientY}; return;
   }
   let dx=e.clientX-prev.x,dy=e.clientY-prev.y;
@@ -1077,6 +1099,13 @@ function toggleCirc(){
   b.textContent='🌀 Circumnutations: '+(circOn?'On':'Off');
   b.classList.toggle('on',circOn);
 }
+function toggleDrawer(){
+  let d=document.getElementById('drawer');
+  let t=document.getElementById('drawer-toggle');
+  d.classList.toggle('hidden');
+  t.textContent=d.classList.contains('hidden')?'▲':'▼';
+}
+
 function resetPlant(){
   plant=initPlant(); simTime=0;
   baseRotX=0; baseRotZ=0; potGroup.rotation.set(0,0,0);
