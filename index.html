@@ -159,7 +159,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 
   <!-- ── Header ── -->
   <div id="header">
-    <div id="title"><span class="avo">🥑</span> Torture the Avocado</div>
+    <div id="title"><span class="avo">🥑</span> Torture the Avocado <span style="font-size:10px;font-weight:400;color:var(--text3);letter-spacing:.01em">· A plant tropisms simulator</span></div>
     <div id="statusbar">loading…</div>
     <button id="btn-examples" onclick="toggleExamples()" title="Examples">✦</button>
     <button id="btn-help" onclick="toggleHelp()">?</button>
@@ -171,7 +171,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
       <canvas id="c"></canvas>
 
       <div id="canvas-controls">
-        <button class="cbtn" id="btn-pause" onclick="togglePause()">⏸ Pause</button>
+        <button class="cbtn pause-on" id="btn-pause" onclick="togglePause()">▶ Resume</button>
         <button class="cbtn" onclick="resetPlant()">↺ Reset</button>
       </div>
 
@@ -232,26 +232,26 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 
         <div class="help-card">
           <h3>🌱 How growth works</h3>
-          <p>The stem is a 3D curve. Growth is <b>diffuse axial elongation</b> within the <b style="color:#4caf3f">green growth zone</b> — cells all along the zone elongate simultaneously, not just at the tip. When one side of the cylindrical stem elongates faster than the other (<b>differential growth</b>), the local curvature changes and the stem bends. The <b style="color:#8B5e3c">brown mature zone</b> has finished elongating; its shape is permanently fixed.</p>
+          <p>The stem is a 3D curve. Growth occurs along the <b style="color:#4caf3f">green growth zone</b> — when one side elongates faster than the other, the stem bends. The <b style="color:#8B5e3c">brown mature zone</b> is permanently fixed.</p>
           <div class="tip">Slow the growth rate right down to watch curvature build step by step.</div>
         </div>
 
         <div class="help-card">
           <h3>🪴 Torturing the plant</h3>
           <p>The classic way to torture a houseplant is to <b>rotate the pot</b> — the stem was growing toward the window, and now gravity and light pull it a different way. Use the Pot tab to tilt and spin. You can also <b>move the light source</b> to the other side and watch the plant chase it. What shape can you grow?</p>
-          <div class="tip">Rotate the pot 90°, then add a light on the opposite side and watch the plant tear itself in two directions.</div>
+          <div class="tip">Rotate the pot 90°, then add a light on the opposite side — gravity and light will pull the stem in competing directions.</div>
         </div>
 
         <div class="help-card">
           <h3>⬆ Gravitropism</h3>
-          <p>Plants sense gravity and grow against it (shoots) or toward it (roots). Negative sensitivity = shoot-like, grows upward. Positive = root-like, grows downward. <b>Gravity always points downward</b>, even when you rotate the pot.</p>
+          <p>Plants sense gravity and grow against it (shoots) or toward it (roots). Negative sensitivity = shoot-like, grows upward. Positive = root-like, grows downward.</p>
           <div class="tip">Rotate the pot 90° and watch the plant slowly correct itself.</div>
         </div>
 
         <div class="help-card">
           <h3>☀ Phototropism</h3>
           <p>Add a point light source and the plant bends toward it. Sensitivity follows Stevens' power law — response grows non-linearly with signal strength. Drag the ☀ sphere to reposition it; use the height slider to move it up and down.</p>
-          <div class="tip">Try placing the light below the pot to make it grow downward.</div>
+          <div class="tip">Try slowly rotating the light around the plant and watch the stem follow.</div>
         </div>
 
         <div class="help-card">
@@ -407,6 +407,11 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 // ── Intro + examples ──────────────────────────────────────────────────
 function closeIntro(){
   document.getElementById('intro-modal').style.display='none';
+  // Start growing now that the user has chosen to begin
+  paused=false;
+  let b=document.getElementById('btn-pause');
+  b.classList.remove('pause-on');
+  b.textContent='⏸ Pause';
 }
 
 function toggleExamples(){
@@ -521,7 +526,7 @@ setTimeout(fadeOnboard,5000);
 // ── Simulation parameters ─────────────────────────────────────────────
 let G=-1.0, L=3.0, GAMMA=3.0, NUM_gz=15, GROW_RATE=1.0;
 let apicalSensing=false, circOn=false, CIRC_AMP=0.5, CIRC_PERIOD=4.0;
-let paused=false;
+let paused=true;
 const R_org=1.25, ds=0.25*R_org, b_photo=0.6, DT=0.14;
 let simTime=0, baseRotX=0, baseRotZ=0;
 
@@ -773,8 +778,9 @@ function makeLeafMesh(lp,n1,n2,T,side,size,dark){
 // ── Stem rendering ────────────────────────────────────────────────────
 let gzMeshes=[];
 let mzGroup=new THREE.Group(); plantGroup.add(mzGroup);
-let mzLeafCount=0;
-let mzStemUpTo=0;   // index up to which MZ stem segments have been added to mzGroup
+let totalGrown=0;        // total segments ever added (never decremented)
+let mzStemAddedUpTo=0;   // totalGrown value up to which MZ stem cylinders are drawn
+let mzLeafAddedUpTo=-1;  // totalGrown value up to which MZ leaves are drawn (-1 = none)
 const LEAF_STEP=Math.max(3,Math.round(5/ds));
 
 function rebuildGZ(){
@@ -819,25 +825,26 @@ function rebuildGZ(){
 }
 
 function addMZStemSegments(){
-  // Add MZ stem cylinder segments to mzGroup as they become permanently fixed.
-  // We add every segment from mzStemUpTo up to gz_start-1, snapshotting position now.
   if(!plant||plant.NUM<2)return;
   let N=plant.NUM, gz_start=Math.max(1,N-NUM_gz);
-  for(let i=mzStemUpTo;i<gz_start-1;i++){
-    let p0=plant.r[i],p1=plant.r[i+1];
+  let pruned=totalGrown-N; // segments shifted off the front
+  // Add stem cylinders for segments that just entered MZ
+  for(let abs=mzStemAddedUpTo; abs<pruned+gz_start-1; abs++){
+    let ai=abs-pruned; // index into current arrays
+    if(ai<0||ai+1>=N) continue;
+    let p0=plant.r[ai],p1=plant.r[ai+1];
     let dx=p1[0]-p0[0],dy=p1[1]-p0[1],dz=p1[2]-p0[2];
     let len=Math.sqrt(dx*dx+dy*dy+dz*dz);
-    if(len<1e-7){mzStemUpTo=i+1;continue;}
-    let r0=R_org*0.22*(0.35+0.65*(1-i/N));
-    let col=new THREE.Color().setHSL(0.07,0.52,0.27);
+    if(len<1e-7){mzStemAddedUpTo=abs+1;continue;}
+    let r0=R_org*0.22*(0.35+0.65*(1-ai/N));
     let mesh=new THREE.Mesh(new THREE.CylinderGeometry(r0*0.9,r0,len,7),
-      new THREE.MeshPhongMaterial({color:col,shininess:4}));
+      new THREE.MeshPhongMaterial({color:new THREE.Color().setHSL(0.07,0.52,0.27),shininess:4}));
     mesh.castShadow=true;
     let mid=[(p0[0]+p1[0])/2,(p0[1]+p1[1])/2,(p0[2]+p1[2])/2];
     mesh.position.set(mid[0],mid[1],mid[2]);
     mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(dx/len,dy/len,dz/len));
     mzGroup.add(mesh);
-    mzStemUpTo=i+1;
+    mzStemAddedUpTo=abs+1;
   }
 }
 
@@ -845,20 +852,26 @@ function updateMZLeaves(){
   if(!plant||plant.NUM<2)return;
   addMZStemSegments();
   let N=plant.NUM, gz_start=Math.max(1,N-NUM_gz);
-  for(let i=4+mzLeafCount*LEAF_STEP;i<gz_start-LEAF_STEP;i+=LEAF_STEP){
-    let lp=plant.r[i],Di=plant.D[i];
+  let pruned=totalGrown-N;
+  // First leaf at absolute index pruned+4, then every LEAF_STEP
+  let firstAbs=pruned+4;
+  // Align to LEAF_STEP grid
+  if(mzLeafAddedUpTo<0) mzLeafAddedUpTo=firstAbs-LEAF_STEP;
+  for(let abs=mzLeafAddedUpTo+LEAF_STEP; abs<pruned+gz_start-LEAF_STEP; abs+=LEAF_STEP){
+    let ai=abs-pruned;
+    if(ai<0||ai>=N) continue;
+    let lp=plant.r[ai],Di=plant.D[ai];
     let n1=[Di[0],Di[3],Di[6]],n2=[Di[1],Di[4],Di[7]],T=[Di[2],Di[5],Di[8]];
     let ng=new THREE.Mesh(new THREE.TorusGeometry(R_org*0.17,R_org*0.055,4,8),
       new THREE.MeshPhongMaterial({color:0x6a4820}));
-    ng.position.set(lp[0],lp[1],lp[2]); ng.rotation.z=i*0.7; mzGroup.add(ng);
+    ng.position.set(lp[0],lp[1],lp[2]); ng.rotation.z=ai*0.7; mzGroup.add(ng);
     for(let s=-1;s<=1;s+=2){ mzGroup.add(makeLeafMesh(lp,n1,n2,T,s,R_org*1.45,true)); }
-    mzLeafCount++;
+    mzLeafAddedUpTo=abs;
   }
 }
 function clearMZLeaves(){
   while(mzGroup.children.length){let m=mzGroup.children[0];mzGroup.remove(m);if(m.geometry)m.geometry.dispose();}
-  mzLeafCount=0;
-  mzStemUpTo=0;
+  mzStemAddedUpTo=0; mzLeafAddedUpTo=-1; totalGrown=0;
 }
 
 // ── Light source ──────────────────────────────────────────────────────
@@ -1109,7 +1122,9 @@ function toggleDrawer(){
 function resetPlant(){
   plant=initPlant(); simTime=0;
   baseRotX=0; baseRotZ=0; potGroup.rotation.set(0,0,0);
-  clearMZLeaves(); rebuildGZ();
+  clearMZLeaves();
+  totalGrown=plant.NUM;  // account for initial segments so base stem is drawn
+  rebuildGZ();
   updateBalance();
 
 }
@@ -1132,12 +1147,12 @@ function animate(){
   if(!paused&&plant){
     growAccum+=GROW_RATE/60;
     while(growAccum>=1){
-      growAccum-=1; growPlant(plant); updateMZLeaves();
+      growAccum-=1; growPlant(plant); totalGrown++; updateMZLeaves();
       if(plant.NUM>MAX_SEGS){
         plant.k1.shift();plant.k2.shift();plant.D.shift();plant.r.shift();
         plant.Delta.shift();plant.DeltaGrav.shift();plant.DeltaPhoto.shift();
         plant.DeltaAuto.shift();plant.DeltaCirc.shift(); plant.NUM--;
-        if(mzGroup.children.length>80){let m=mzGroup.children[0];mzGroup.remove(m);if(m.geometry)m.geometry.dispose();}
+
       }
     }
     updatePlant(plant);
