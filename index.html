@@ -164,6 +164,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
         <button class="cbtn" onclick="resetPlant()">↺ Reset</button>
       </div>
 
+      <div id="grav-label">g</div>
       <div id="onboard">🖐 Drag to orbit &nbsp;·&nbsp; ☀ Add a light source &nbsp;·&nbsp; 🪴 Rotate the pot</div>
       <div id="pause-overlay">⏸ PAUSED</div>
       <div id="light-toast">Tap in the scene to place the light</div>
@@ -314,7 +315,6 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
     <!-- LIGHT -->
     <div id="tab-photo" class="panel-page">
       <div class="hint">The plant bends toward a point light source. Sensitivity follows Stevens' power law.</div>
-      <div class="hint" style="color:var(--text2)">⏱ Bending takes time — the stem curves by <b>differential elongation all along the growth zone</b>, not by flexing. The bend develops as new cells in the growth zone elongate asymmetrically.</div>
       <div class="row">
         <button class="btn" id="btn-addlight" onclick="startPlaceLight()">☀ Place light</button>
         <button class="btn danger" id="btn-rmlight" onclick="removeLight()" style="display:none">✕ Remove</button>
@@ -362,7 +362,6 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 
     <!-- POT -->
     <div id="tab-pot" class="panel-page">
-      <div class="hint">Simulate turning a houseplant. Gravity and light always act in the fixed world — only the pot rotates.</div>
       <div class="row2">
         <button class="btn" onclick="rotatePlant(-1,0)">↺ Tilt X</button>
         <button class="btn" onclick="rotatePlant(1,0)">↻ Tilt X</button>
@@ -374,7 +373,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 
     <!-- DEBUG -->
     <div id="tab-debug" class="panel-page">
-      <div class="hint">Differential growth vectors at every 5th growth-zone segment, in world frame. Arrow length ∝ |Δ|.</div>
+      <div class="hint">Differential growth vectors at every 5th growth-zone segment, in lab frame. Arrow length ∝ |Δ|.</div>
       <button class="btn" id="btn-delta-Total"  onclick="toggleDelta('Total')"  style="border-left:3px solid #ffffff">Δ Total: Off</button>
       <button class="btn" id="btn-delta-Grav"   onclick="toggleDelta('Grav')"   style="border-left:3px solid #4488ff">Δ Gravitropism: Off</button>
       <button class="btn" id="btn-delta-Photo"  onclick="toggleDelta('Photo')"  style="border-left:3px solid #FFD700">Δ Phototropism: Off</button>
@@ -674,8 +673,7 @@ scene.add(new THREE.GridHelper(80,20,0x1e1a16,0x161310));
 let gravArrow=new THREE.ArrowHelper(new THREE.Vector3(0,-1,0),new THREE.Vector3(-15,24,0),8,0xcccccc,2.2,1.6);
 scene.add(gravArrow);
 // Label "g" via a small sphere marker at arrow tip
-let gravTip=new THREE.Mesh(new THREE.SphereGeometry(0.3,6,5),new THREE.MeshBasicMaterial({color:0xcccccc}));
-gravTip.position.set(-15,24-8,0); scene.add(gravTip);
+
 
 // ── Pot ───────────────────────────────────────────────────────────────
 let potGroup=new THREE.Group(), plantGroup=new THREE.Group();
@@ -1124,6 +1122,20 @@ function animate(){
   }
   if(lightSphere)lightSphere.rotation.y+=0.012;
   renderer.render(scene,camera);
+  // Project gravity arrow tip to screen space for the "g" label
+  let gl=document.getElementById('grav-label');
+  if(gl){
+    let tp=new THREE.Vector3(-15,24-8,0);
+    tp.project(camera);
+    let rect=canvas3.getBoundingClientRect();
+    let sx=( tp.x*0.5+0.5)*rect.width +rect.left;
+    let sy=(-tp.y*0.5+0.5)*rect.height+rect.top;
+    if(tp.z<1){
+      gl.style.display='block';
+      gl.style.left=sx+'px';
+      gl.style.top =(sy-14)+'px';
+    } else { gl.style.display='none'; }
+  }
 }
 animate();
 </script>
