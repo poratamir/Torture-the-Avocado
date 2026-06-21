@@ -103,9 +103,6 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 .sbtn.active{background:var(--success-bg);border-color:var(--success-border);color:#7dd870}
 .sbtn:active{background:var(--btn-h)}
 
-/* balance meter */
-#balance-bar-wrap{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
-#balance-bar{height:100%;border-radius:3px;transition:width .3s,background .3s}
 
 
 
@@ -290,7 +287,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
         <button class="tab" onclick="switchTab('photo')">☀ Light</button>
       </div>
       <div class="tab-row-sep"></div>
-      <div class="tab-row" style="padding:0 12.5%">
+      <div class="tab-row">
         <button class="tab" onclick="switchTab('proprio')">🔄 Posture</button>
         <button class="tab" onclick="switchTab('circ')">🌀 Spiral</button>
         <button class="tab" onclick="switchTab('debug')">Δ Vectors</button>
@@ -300,13 +297,13 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
     <!-- GROW -->
     <div id="tab-sim" class="panel-page active">
       <div class="speed-btns">
-        <button class="sbtn" id="sp-slow"   onclick="setSpeed(0.5,'slow')">🐢 Slow</button>
-        <button class="sbtn active" id="sp-norm" onclick="setSpeed(1.0,'norm')">🌿 Normal</button>
-        <button class="sbtn" id="sp-fast"   onclick="setSpeed(2.5,'fast')">⚡ Fast</button>
+        <button class="sbtn" id="sp-slow"   onclick="setSpeed(1.0,'slow')">🐢 Slow</button>
+        <button class="sbtn active" id="sp-norm" onclick="setSpeed(2.5,'norm')">🌿 Normal</button>
+        <button class="sbtn" id="sp-fast"   onclick="setSpeed(5.0,'fast')">⚡ Fast</button>
       </div>
       <div class="ctrl">
-        <div class="cl">Growth zone length <span id="vgz">15</span> seg</div>
-        <input id="sl-gz" type="range" min="3" max="30" step="1" value="15" oninput="NUM_gz=+this.value;document.getElementById('vgz').textContent=this.value">
+        <div class="cl">Growth zone length <span id="vgz">25</span> seg</div>
+        <input id="sl-gz" type="range" min="3" max="50" step="1" value="25" oninput="NUM_gz=+this.value;document.getElementById('vgz').textContent=this.value">
       </div>
       <div class="legend">
         <div class="ldot" style="background:#4caf3f"></div><span>Active growth zone</span>
@@ -319,7 +316,10 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
       <div class="hint">Plants sense the direction of gravity. <b>Gravity always points downward</b>, even after rotating the pot.</div>
       <div class="ctrl">
         <div class="cl">Sensitivity g <span id="vg">-1.0</span></div>
-        <input id="sl-g" type="range" min="-3" max="3" step="0.1" value="-1.0" oninput="G=+this.value;document.getElementById('vg').textContent=G.toFixed(1);updateGravSign()">
+        <input id="sl-g" type="range" min="-2.5" max="2.5" step="0.1" value="-1.0" oninput="G=+this.value;document.getElementById('vg').textContent=G.toFixed(1);updateGravSign()">
+      <div style="position:relative;height:16px;margin-top:-2px;pointer-events:none">
+        <span id="grav-zero-arrow" style="position:absolute;left:50%;transform:translateX(-50%);font-size:13px;color:#888;line-height:1">↑</span>
+      </div>
       </div>
       <div class="hint" id="gravsign-hint" style="color:#aaaaaa">↑ Negative → shoot (grows away from gravity)</div>
     </div>
@@ -337,8 +337,8 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
       </div>
       <div class="hint" id="light-hint" style="display:none">Drag ☀ in the scene to reposition</div>
       <div class="ctrl">
-        <div class="cl">Sensitivity β <span id="vl">3.0</span></div>
-        <input id="sl-l" type="range" min="0" max="6" step="0.1" value="3.0" oninput="L=+this.value;document.getElementById('vl').textContent=L.toFixed(1);updateBalance()">
+        <div class="cl">Sensitivity β <span id="vl">2.0</span></div>
+        <input id="sl-l" type="range" min="0" max="2.5" step="0.1" value="2.0" oninput="L=+this.value;document.getElementById('vl').textContent=L.toFixed(1)">
       </div>
       <button class="btn" id="btn-apical" onclick="toggleSensing()">👁 Distributed sensing</button>
     </div>
@@ -347,15 +347,9 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
     <div id="tab-proprio" class="panel-page">
       <div class="hint">The plant senses its own curvature and resists over-bending — an internal straightening drive called <b>autotropism</b> or proprioception.</div>
       <div class="ctrl">
-        <div class="cl">Sensitivity γ <span id="vp">3.0</span></div>
-        <input id="sl-gamma" type="range" min="0" max="15" step="0.5" value="3.0" oninput="GAMMA=+this.value;document.getElementById('vp').textContent=GAMMA.toFixed(1);updateBalance()">
+        <div class="cl">Sensitivity γ <span id="vp">3.00</span></div>
+        <input id="sl-gamma" type="range" min="0" max="10" step="0.25" value="3.0" oninput="GAMMA=+this.value;document.getElementById('vp').textContent=GAMMA.toFixed(2)">
       </div>
-      <div class="hint">Balance number <b>B = β · L_gz / γ</b></div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <div id="balance-bar-wrap" style="flex:1"><div id="balance-bar" style="width:40%;background:#4caf3f"></div></div>
-        <span class="badge" id="balance-val">B = 15.00</span>
-      </div>
-      <div class="hint" id="balance-hint">Highly oscillatory — tip spirals wildly!</div>
     </div>
 
     <!-- SPIRAL / CIRCUMNUTATIONS -->
@@ -431,8 +425,8 @@ function loadExample(name){
   function sp(varName, val){
     switch(varName){
       case 'G':    G=val;    document.getElementById('sl-g').value=val;     document.getElementById('vg').textContent=val.toFixed(1);    updateGravSign(); break;
-      case 'L':    L=val;    document.getElementById('sl-l').value=val;     document.getElementById('vl').textContent=val.toFixed(1);    updateBalance();  break;
-      case 'GAMMA':GAMMA=val;document.getElementById('sl-gamma').value=val; document.getElementById('vp').textContent=val.toFixed(1);    updateBalance();  break;
+      case 'L':    L=val;    document.getElementById('sl-l').value=val;     document.getElementById('vl').textContent=val.toFixed(1);    break;
+      case 'GAMMA':GAMMA=val;document.getElementById('sl-gamma').value=val; document.getElementById('vp').textContent=val.toFixed(2);    break;
       case 'NUM_gz':NUM_gz=val;document.getElementById('sl-gz').value=val;  document.getElementById('vgz').textContent=val; break;
     }
   }
@@ -452,10 +446,12 @@ function loadExample(name){
 
   if(name==='gravi_tilt'){
     // Gravitropism, pot tilted 90 deg, show gravitropic + autotropic Δ
-    sp('G',-1.0); sp('L',0.0); sp('GAMMA',3.0); sp('NUM_gz',15);
-    setCirc(false); setSpeed(1.0,'norm');
+    sp('G',-1.0); sp('L',0.0); sp('GAMMA',3.0); sp('NUM_gz',25);
+    setCirc(false); setSpeed(2.5,'norm');
     tiltPot(Math.PI/2, 0);
     toggleDelta('Grav'); toggleDelta('Auto');
+    // Position camera to view the YZ bending plane from the side (+X direction)
+    orb.phi=Math.PI/2; orb.theta=-Math.PI/2; orb.dist=65; updateCamera();
     switchTab('proprio');
 
   } else if(name==='lucky'){
@@ -471,7 +467,7 @@ function loadExample(name){
     let lz   = (Math.random()-0.5)*30;
     let doCirc= Math.random()>0.5;
     sp('G', gVal); sp('L', lVal); sp('GAMMA', gVal2); sp('NUM_gz', gz);
-    setCirc(doCirc); setSpeed(1.0,'norm');
+    setCirc(doCirc); setSpeed(2.5,'norm');
     tiltPot(rx, rz);
     placeLight(lx, ly, lz);
     switchTab('sim');
@@ -493,20 +489,11 @@ function updateGravSign(){
   if(G<0){h.textContent='↑ Negative → shoot (grows away from gravity)';h.style.color='#cccccc';}
   else if(G>0){h.textContent='↓ Positive → root (grows toward gravity)';h.style.color='#cccccc';}
   else{h.textContent='0 → no gravitropic response';h.style.color='var(--text3)';}
+  let za=document.getElementById('grav-zero-arrow');
+  if(za) za.textContent=G>0?'↓':'↑';
 }
 
-function updateBalance(){
-  let B=Math.abs(L)*NUM_gz/Math.max(GAMMA,0.01);
-  let pct=Math.min(B/3,1)*100;
-  let bar=document.getElementById('balance-bar');
-  let hint=document.getElementById('balance-hint');
-  bar.style.width=pct+'%';
-  if(B<0.5){bar.style.background='#4488ff';hint.textContent='Overdamped — smooth, slow convergence';}
-  else if(B<1.5){bar.style.background='#4caf3f';hint.textContent='Well-balanced — realistic plant dynamics';}
-  else if(B<3){bar.style.background='#d4a94a';hint.textContent='Underdamped — tip overshoots, then corrects';}
-  else{bar.style.background='#e04040';hint.textContent='Highly oscillatory — tip spirals wildly!';}
-  document.getElementById('balance-val').textContent='B = '+B.toFixed(2);
-}
+
 
 function setSpeed(rate,id){
   GROW_RATE=rate;
@@ -524,7 +511,7 @@ function fadeOnboard(){
 setTimeout(fadeOnboard,5000);
 
 // ── Simulation parameters ─────────────────────────────────────────────
-let G=-1.0, L=3.0, GAMMA=3.0, NUM_gz=15, GROW_RATE=1.0;
+let G=-1.0, L=2.0, GAMMA=3.0, NUM_gz=25, GROW_RATE=2.5;
 let apicalSensing=false, circOn=false, CIRC_AMP=0.5, CIRC_PERIOD=4.0;
 let paused=true;
 const R_org=1.25, ds=0.25*R_org, b_photo=0.6, DT=0.14;
@@ -669,6 +656,7 @@ function updatePlant(p){
   }
 }
 
+
 // ── Three.js ──────────────────────────────────────────────────────────
 const canvas3=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas:canvas3,antialias:true});
@@ -774,6 +762,7 @@ function makeLeafMesh(lp,n1,n2,T,side,size,dark){
   mesh.setRotationFromMatrix(new THREE.Matrix4().makeBasis(lX,lY2,lZ2));
   return mesh;
 }
+
 
 // ── Stem rendering ────────────────────────────────────────────────────
 let gzMeshes=[];
@@ -1020,6 +1009,8 @@ function rebuildDeltaArrows(){
   });
 }
 
+
+
 function toggleDelta(key){
   dShow[key]=!dShow[key];
   let src=DSRCS.find(s=>s.key===key);
@@ -1068,7 +1059,7 @@ canvas3.addEventListener('pointermove',e=>{
   }
   let dx=e.clientX-prev.x,dy=e.clientY-prev.y;
   orb.theta-=dx*0.008; orb.phi-=dy*0.008;
-  orb.phi=Math.max(0.05,Math.min(1.5,orb.phi));
+  orb.phi=Math.max(0.05,Math.min(Math.PI/2,orb.phi));
   pointers[e.pointerId]={x:e.clientX,y:e.clientY};
   updateCamera();
 });
@@ -1125,11 +1116,9 @@ function resetPlant(){
   clearMZLeaves();
   totalGrown=plant.NUM;  // account for initial segments so base stem is drawn
   rebuildGZ();
-  updateBalance();
 
 }
 resetPlant();
-updateBalance();
 
 // ── Resize ────────────────────────────────────────────────────────────
 function resize3D(){
@@ -1149,14 +1138,15 @@ function animate(){
     while(growAccum>=1){
       growAccum-=1; growPlant(plant); totalGrown++; updateMZLeaves();
       if(plant.NUM>MAX_SEGS){
-        plant.k1.shift();plant.k2.shift();plant.D.shift();plant.r.shift();
+        plant.k1.shift();plant.k2.shift();
+        plant.D.shift();plant.r.shift();
         plant.Delta.shift();plant.DeltaGrav.shift();plant.DeltaPhoto.shift();
         plant.DeltaAuto.shift();plant.DeltaCirc.shift(); plant.NUM--;
 
       }
     }
     updatePlant(plant);
-    if(tick%3===0){rebuildGZ();rebuildDeltaArrows();}
+    if(tick%3===0){rebuildGZ(); rebuildDeltaArrows();}
 
   }
   if(tick%45===0&&plant){
