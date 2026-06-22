@@ -446,9 +446,13 @@ function loadExample(name){
 
   if(name==='gravi_tilt'){
     // Gravitropism, pot tilted 90 deg, show gravitropic + autotropic Δ
-    sp('G',-1.0); sp('L',0.0); sp('GAMMA',3.0); sp('NUM_gz',2.0);
+    sp('G',-1.0); sp('L',0.0); sp('GAMMA',3.0); sp('NUM_gz',5.0);
     setCirc(false); setSpeed(20.0,'norm');
     tiltPot(Math.PI/2, 0);
+    // Pre-grow 5R of straight stem so there's a visible MZ to correct
+    let preSegs=Math.round(5.0*R_org/ds);
+    for(let i=0;i<preSegs;i++){ growPlant(plant); totalGrown++; }
+    updateMZLeaves();
     toggleDelta('Grav'); toggleDelta('Auto');
     // Position camera to view the YZ bending plane from the side (+X direction)
     orb.phi=Math.PI/2; orb.theta=-Math.PI/2; orb.dist=65; updateCamera();
