@@ -297,13 +297,13 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
     <!-- GROW -->
     <div id="tab-sim" class="panel-page active">
       <div class="speed-btns">
-        <button class="sbtn" id="sp-slow"   onclick="setSpeed(1.0,'slow')">🐢 Slow</button>
-        <button class="sbtn active" id="sp-norm" onclick="setSpeed(2.5,'norm')">🌿 Normal</button>
-        <button class="sbtn" id="sp-fast"   onclick="setSpeed(5.0,'fast')">⚡ Fast</button>
+        <button class="sbtn" id="sp-slow"   onclick="setSpeed(8.0,'slow')">🐢 Slow</button>
+        <button class="sbtn active" id="sp-norm" onclick="setSpeed(20.0,'norm')">🌿 Normal</button>
+        <button class="sbtn" id="sp-fast"   onclick="setSpeed(40.0,'fast')">⚡ Fast</button>
       </div>
       <div class="ctrl">
-        <div class="cl">Growth zone length <span id="vgz">25</span> seg</div>
-        <input id="sl-gz" type="range" min="3" max="50" step="1" value="25" oninput="NUM_gz=+this.value;document.getElementById('vgz').textContent=this.value">
+        <div class="cl">Growth zone <span id="vgz">5.0</span> R</div>
+        <input id="sl-gz" type="range" min="0.5" max="10" step="0.5" value="5.0" oninput="setGZLength(+this.value)">
       </div>
       <div class="legend">
         <div class="ldot" style="background:#4caf3f"></div><span>Active growth zone</span>
@@ -315,8 +315,8 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
     <div id="tab-gravi" class="panel-page">
       <div class="hint">Plants sense the direction of gravity. <b>Gravity always points downward</b>, even after rotating the pot.</div>
       <div class="ctrl">
-        <div class="cl">Sensitivity g <span id="vg">-1.0</span></div>
-        <input id="sl-g" type="range" min="-2.5" max="2.5" step="0.1" value="-1.0" oninput="G=+this.value;document.getElementById('vg').textContent=G.toFixed(1);updateGravSign()">
+        <div class="cl">Sensitivity g <span id="vg">-0.5</span></div>
+        <input id="sl-g" type="range" min="-2.5" max="2.5" step="0.1" value="-0.5" oninput="G=+this.value;document.getElementById('vg').textContent=G.toFixed(1);updateGravSign()">
       <div style="position:relative;height:16px;margin-top:-2px;pointer-events:none">
         <span id="grav-zero-arrow" style="position:absolute;left:50%;transform:translateX(-50%);font-size:13px;color:#888;line-height:1">↑</span>
       </div>
@@ -337,8 +337,8 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
       </div>
       <div class="hint" id="light-hint" style="display:none">Drag ☀ in the scene to reposition</div>
       <div class="ctrl">
-        <div class="cl">Sensitivity β <span id="vl">2.0</span></div>
-        <input id="sl-l" type="range" min="0" max="2.5" step="0.1" value="2.0" oninput="L=+this.value;document.getElementById('vl').textContent=L.toFixed(1)">
+        <div class="cl">Sensitivity β <span id="vl">0.5</span></div>
+        <input id="sl-l" type="range" min="0" max="2.5" step="0.1" value="0.5" oninput="L=+this.value;document.getElementById('vl').textContent=L.toFixed(1)">
       </div>
       <button class="btn" id="btn-apical" onclick="toggleSensing()">👁 Distributed sensing</button>
     </div>
@@ -347,8 +347,8 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
     <div id="tab-proprio" class="panel-page">
       <div class="hint">The plant senses its own curvature and resists over-bending — an internal straightening drive called <b>autotropism</b> or proprioception.</div>
       <div class="ctrl">
-        <div class="cl">Sensitivity γ <span id="vp">3.00</span></div>
-        <input id="sl-gamma" type="range" min="0" max="10" step="0.25" value="3.0" oninput="GAMMA=+this.value;document.getElementById('vp').textContent=GAMMA.toFixed(2)">
+        <div class="cl">Sensitivity γ <span id="vp">1.50</span></div>
+        <input id="sl-gamma" type="range" min="0" max="10" step="0.25" value="1.5" oninput="GAMMA=+this.value;document.getElementById('vp').textContent=GAMMA.toFixed(2)">
       </div>
     </div>
 
@@ -357,12 +357,12 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
       <div class="hint">An internal oscillator spins the growing tip in circles — seen in many shoots, especially climbing plants searching for supports.</div>
       <button class="btn" id="btn-circ" onclick="toggleCirc()">🌀 Circumnutations: Off</button>
       <div class="ctrl">
-        <div class="cl">Amplitude λ₀ <span id="vca">0.50</span></div>
-        <input type="range" min="0.05" max="3" step="0.05" value="0.5" oninput="CIRC_AMP=+this.value;document.getElementById('vca').textContent=CIRC_AMP.toFixed(2)">
+        <div class="cl">Amplitude λ₀ <span id="vca">1.00</span></div>
+        <input type="range" min="0.05" max="3" step="0.05" value="1.0" oninput="CIRC_AMP=+this.value;document.getElementById('vca').textContent=CIRC_AMP.toFixed(2)">
       </div>
       <div class="ctrl">
-        <div class="cl">Period <span id="vcp">4.0</span> s</div>
-        <input type="range" min="0.5" max="12" step="0.1" value="4.0" oninput="CIRC_PERIOD=+this.value;document.getElementById('vcp').textContent=CIRC_PERIOD.toFixed(1)">
+        <div class="cl">Period <span id="vcp">5.0</span> s</div>
+        <input type="range" min="0.5" max="20" step="0.5" value="5.0" oninput="CIRC_PERIOD=+this.value;document.getElementById('vcp').textContent=CIRC_PERIOD.toFixed(1)">
       </div>
     </div>
 
@@ -427,7 +427,7 @@ function loadExample(name){
       case 'G':    G=val;    document.getElementById('sl-g').value=val;     document.getElementById('vg').textContent=val.toFixed(1);    updateGravSign(); break;
       case 'L':    L=val;    document.getElementById('sl-l').value=val;     document.getElementById('vl').textContent=val.toFixed(1);    break;
       case 'GAMMA':GAMMA=val;document.getElementById('sl-gamma').value=val; document.getElementById('vp').textContent=val.toFixed(2);    break;
-      case 'NUM_gz':NUM_gz=val;document.getElementById('sl-gz').value=val;  document.getElementById('vgz').textContent=val; break;
+      case 'NUM_gz':document.getElementById('sl-gz').value=val; setGZLength(val); break;
     }
   }
   function setCirc(on){ if(circOn!==on) toggleCirc(); }
@@ -446,8 +446,8 @@ function loadExample(name){
 
   if(name==='gravi_tilt'){
     // Gravitropism, pot tilted 90 deg, show gravitropic + autotropic Δ
-    sp('G',-1.0); sp('L',0.0); sp('GAMMA',3.0); sp('NUM_gz',25);
-    setCirc(false); setSpeed(2.5,'norm');
+    sp('G',-1.0); sp('L',0.0); sp('GAMMA',3.0); sp('NUM_gz',2.0);
+    setCirc(false); setSpeed(20.0,'norm');
     tiltPot(Math.PI/2, 0);
     toggleDelta('Grav'); toggleDelta('Auto');
     // Position camera to view the YZ bending plane from the side (+X direction)
@@ -459,7 +459,7 @@ function loadExample(name){
     let gVal = +((-1 + Math.random()*2).toFixed(1));
     let lVal = +(( 1 + Math.random()*4).toFixed(1));
     let gVal2= +(( 2 + Math.random()*10).toFixed(1));
-    let gz   = 8 + Math.floor(Math.random()*14);
+    let gz   = +(( 2 + Math.random()*6).toFixed(1));
     let rx   = (Math.random()>0.5)?(Math.PI/4+Math.random()*Math.PI/4):0;
     let rz   = (Math.random()>0.5)?(Math.random()-0.5)*Math.PI/3:0;
     let lx   = (Math.random()-0.5)*40;
@@ -467,7 +467,7 @@ function loadExample(name){
     let lz   = (Math.random()-0.5)*30;
     let doCirc= Math.random()>0.5;
     sp('G', gVal); sp('L', lVal); sp('GAMMA', gVal2); sp('NUM_gz', gz);
-    setCirc(doCirc); setSpeed(2.5,'norm');
+    setCirc(doCirc); setSpeed(20.0,'norm');
     tiltPot(rx, rz);
     placeLight(lx, ly, lz);
     switchTab('sim');
@@ -511,10 +511,10 @@ function fadeOnboard(){
 setTimeout(fadeOnboard,5000);
 
 // ── Simulation parameters ─────────────────────────────────────────────
-let G=-1.0, L=2.0, GAMMA=3.0, NUM_gz=25, GROW_RATE=2.5;
-let apicalSensing=false, circOn=false, CIRC_AMP=0.5, CIRC_PERIOD=4.0;
+const R_org=1.25, ds=0.0625*R_org, b_photo=0.6, DT=0.14;
+let G=-0.5, L=0.5, GAMMA=1.5, NUM_gz=Math.round(5.0*R_org/ds), GROW_RATE=20.0;
+let apicalSensing=false, circOn=false, CIRC_AMP=1.0, CIRC_PERIOD=5.0;
 let paused=true;
-const R_org=1.25, ds=0.25*R_org, b_photo=0.6, DT=0.14;
 let simTime=0, baseRotX=0, baseRotZ=0;
 
 // ── Math helpers ──────────────────────────────────────────────────────
@@ -1011,6 +1011,14 @@ function rebuildDeltaArrows(){
 
 
 
+
+function setGZLength(val){
+  NUM_gz=Math.round(val*R_org/ds);
+  document.getElementById('vgz').textContent=val.toFixed(1);
+  // MZ boundary moved — reset and rebuild from scratch
+  if(plant){ clearMZLeaves(); totalGrown=plant.NUM; }
+}
+
 function toggleDelta(key){
   dShow[key]=!dShow[key];
   let src=DSRCS.find(s=>s.key===key);
@@ -1130,13 +1138,15 @@ resize3D();
 
 // ── Main loop ─────────────────────────────────────────────────────────
 const MAX_SEGS=Math.round(60/ds);
-let tick=0, growAccum=0;
-function animate(){
+let tick=0, growAccum=0, lastTime=0;
+function animate(now){
   requestAnimationFrame(animate); tick++;
+  let dt=lastTime?Math.min((now-lastTime)/1000, 0.05):1/60; lastTime=now;
   if(!paused&&plant){
-    growAccum+=GROW_RATE/60;
+    growAccum+=GROW_RATE*dt;
     while(growAccum>=1){
       growAccum-=1; growPlant(plant); totalGrown++; updateMZLeaves();
+      updatePlant(plant);
       if(plant.NUM>MAX_SEGS){
         plant.k1.shift();plant.k2.shift();
         plant.D.shift();plant.r.shift();
@@ -1145,8 +1155,8 @@ function animate(){
 
       }
     }
-    updatePlant(plant);
-    if(tick%3===0){rebuildGZ(); rebuildDeltaArrows();}
+    rebuildGZ();
+    if(tick%4===0){rebuildDeltaArrows();}
 
   }
   if(tick%45===0&&plant){
