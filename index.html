@@ -1019,8 +1019,18 @@ function rebuildDeltaArrows(){
 function setGZLength(val){
   NUM_gz=Math.round(val*R_org/ds);
   document.getElementById('vgz').textContent=val.toFixed(1);
-  // MZ boundary moved — reset and rebuild from scratch
-  if(plant){ clearMZLeaves(); totalGrown=plant.NUM; }
+  // Adjust MZ tracking to new gz boundary — don't clear existing MZ meshes.
+  // mzStemAddedUpTo tracks which absolute segments have been drawn as MZ.
+  // If GZ shrank (more MZ), new MZ segments will be added by addMZStemSegments.
+  // If GZ grew (less MZ), existing MZ meshes overlap the new GZ — they'll be
+  // visually overdrawn by rebuildGZ which draws on top. Acceptable trade-off.
+  if(plant){
+    let pruned=totalGrown-plant.NUM;
+    let new_gz_start=Math.max(1,plant.NUM-NUM_gz);
+    // Pull mzStemAddedUpTo back if GZ grew into old MZ territory
+    let newMzUpTo=pruned+new_gz_start-1;
+    if(newMzUpTo<mzStemAddedUpTo) mzStemAddedUpTo=Math.max(0,newMzUpTo);
+  }
 }
 
 function toggleDelta(key){
