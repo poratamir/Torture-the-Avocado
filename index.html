@@ -265,7 +265,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 
         <div class="help-card">
           <h3>Δ Differential growth vectors</h3>
-          <p>The Δ tab overlays arrows showing the <b>differential growth direction</b> at each cross-section of the growth zone — the direction in which one side of the stem elongates faster than the other. Each arrow is the vector sum of all active stimuli (gravity, light, autotropism, circumnutations) projected onto the stem cross-section. Arrow length is proportional to magnitude.</p>
+          <p>The Δ tab overlays arrows showing the <b>differential growth direction</b> at each cross-section of the growth zone — the direction in which one side of the stem elongates faster than the other. Each arrow shows one stimulus (gravity, light, autotropism, or circumnutations), and the Total arrow is their vector sum. Arrow length is proportional to magnitude.</p>
         </div>
 
         <div id="help-ref">
@@ -459,16 +459,16 @@ function loadExample(name){
     switchTab('proprio');
 
   } else if(name==='lucky'){
-    // Random mix of everything
-    let gVal = +((-1 + Math.random()*2).toFixed(1));
-    let lVal = +(( 1 + Math.random()*4).toFixed(1));
-    let gVal2= +(( 2 + Math.random()*10).toFixed(1));
-    let gz   = +(( 2 + Math.random()*6).toFixed(1));
+    // Random mix of everything — ranges match current slider limits
+    let gVal = +((-2.5 + Math.random()*5).toFixed(1));          // G: -2.5 to +2.5
+    let lVal = +((Math.random()*2.5).toFixed(1));                // L: 0 to 2.5
+    let gVal2= +((Math.random()*10).toFixed(2));                 // γ: 0 to 10
+    let gz   = +(( 0.5 + Math.random()*9.5).toFixed(1));        // gz: 0.5 to 10 R
     let rx   = (Math.random()>0.5)?(Math.PI/4+Math.random()*Math.PI/4):0;
     let rz   = (Math.random()>0.5)?(Math.random()-0.5)*Math.PI/3:0;
-    let lx   = (Math.random()-0.5)*40;
+    let lx   = (Math.random()-0.5)*80;
     let ly   = 8 + Math.random()*30;
-    let lz   = (Math.random()-0.5)*30;
+    let lz   = (Math.random()-0.5)*80;
     let doCirc= Math.random()>0.5;
     sp('G', gVal); sp('L', lVal); sp('GAMMA', gVal2); sp('NUM_gz', gz);
     setCirc(doCirc); setSpeed(20.0,'norm');
